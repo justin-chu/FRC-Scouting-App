@@ -61,7 +61,7 @@ LocalStack.navigationOptions = {
       focused={focused}
       name={Platform.OS === 'ios' ? 'ios-person' : 'md-person'}
     />
-  ),
+  )
 };
 
 export default createBottomTabNavigator({

@@ -50,7 +50,7 @@ let addItem = (info) => {
       }
   });
 };
-function findPoints(s){
+findPoints = (s) => {
   var total= 0, s= s.match(/[+\-]*(\.\d+|\d+(\.\d+)?)/g) || [];
   while(s.length){
       total+= parseFloat(s.shift());
@@ -76,15 +76,18 @@ export default class HomeScreen extends React.Component {
           <Icon.Ionicons name={Platform.OS === 'ios' ? 'ios-information-circle' : 'md-information-circle'} 
             size={26} style={{color: 'white', marginLeft: 15}}/>
         </TouchableOpacity>
+      ),
+      headerRight: (
+        <TouchableOpacity onPress={() => {params.clearButton()}}>
+          <Icon.Ionicons name={Platform.OS === 'ios' ? 'ios-close' : 'md-close'} 
+            size={26} style={{color: 'white', marginRight: 15}}/>
+        </TouchableOpacity>
       )
     }
   };
 
   state = {
     teamNum: '',
-    gotOffHabitat: '',
-    crossedBaseline: '',
-    usedVision: '',
     numCargoInCShipAuton:'',
     numCargoInRShipAuton:'',
     numHPanelsInCShipAuton:'',
@@ -94,14 +97,35 @@ export default class HomeScreen extends React.Component {
     numHPanelsInCShipTele:'',
     numHPanelsInRShipTele:'',
     habitatHeight:'',
+    gotOffHabitat: '',
+    crossedBaseline: '',
+    usedVision: '',
     extraComments: '',
     modalVisible: false
   };
 
   componentDidMount() {
     this.props.navigation.setParams({
-      setModalVisible: this.setModalVisible.bind(this)
+      setModalVisible: this.setModalVisible.bind(this),
+      clearButton: this.clearButton.bind(this)
     });
+  }
+  
+  clearButton = () => {
+    Alert.alert("Are you sure you want to clear all fields?", "",
+    [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+        onPress: () => {}
+      },
+      {
+        text: 'OK', 
+        onPress: () => {
+          this.clearInputs()
+        }
+      }
+    ])
   }
 
   handleChange = (name, text) => {
@@ -117,34 +141,39 @@ export default class HomeScreen extends React.Component {
   }
 
   handleSubmit = () => {
-    var empty = false
-    if(Object.values(this.state).splice(0,12).includes('')) //dont do this for extra comments since its optional
-      empty=true
-
-    if(empty==true){
-      Alert.alert('Please fill out all fields');
-    }
+    if(Object.values(this.state).splice(0,12).includes(''))
+      Alert.alert('Please fill out all fields (including buttons)');
     else {
-      _storeData(this.state);
-      addItem(this.state)
-      this.setState({
-        teamNum: '',
-        gotOffHabitat: '',
-        crossedBaseline: '',
-        usedVision: '',
-        numCargoInCShipAuton:'',
-        numCargoInRShipAuton:'',
-        numHPanelsInCShipAuton:'',
-        numHPanelsInRShipAuton:'',
-        numCargoInCShipTele:'',
-        numCargoInRShipTele:'',
-        numHPanelsInCShipTele:'',
-        numHPanelsInRShipTele:'',
-        habitatHeight:'',
-        extraComments: '',
-      })
-      Alert.alert('Item saved successfully');
+      if(this.state.teamNum.trim()==="0")
+        Alert.alert('The team number cannot be 0');
+      else if(!Object.values(this.state).splice(0,10).every((i)=>{return Number.isInteger(+i)}))
+        Alert.alert('Please use only numbers for the scores', 'No letters, symbols or spaces');
+      else {
+        _storeData(this.state)
+        addItem(this.state)
+        this.clearInputs()
+        Alert.alert('Item saved successfully');
+      }
     }
+  }
+
+  clearInputs = () => {
+    this.setState({
+      teamNum: '',
+      gotOffHabitat: '',
+      crossedBaseline: '',
+      usedVision: '',
+      numCargoInCShipAuton:'',
+      numCargoInRShipAuton:'',
+      numHPanelsInCShipAuton:'',
+      numHPanelsInRShipAuton:'',
+      numCargoInCShipTele:'',
+      numCargoInRShipTele:'',
+      numHPanelsInCShipTele:'',
+      numHPanelsInRShipTele:'',
+      habitatHeight:'',
+      extraComments: '',
+    })
   }
 
   setModalVisible(visible) {
@@ -163,7 +192,8 @@ export default class HomeScreen extends React.Component {
 
               <Text style={styles.bodyText}>FRC Team Number:</Text>
               <TextInput value={this.state.teamNum} onChange={(text)=>{this.handleChange("teamNum", text)}} 
-                clearButtonMode={"while-editing"} keyboardType={'number-pad'} placeholder={"eg. 7520"} style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'phone-pad'} 
+                placeholder={"eg. 7520"} style={styles.inputText}></TextInput>
  
             {/*------------------------------------- Autonomous ------------------------------------*/}
               <View style = {styles.divider} />
@@ -209,19 +239,19 @@ export default class HomeScreen extends React.Component {
 
               <Text style={styles.bodyText}>Amount of cargo put in cargo ship:</Text>
               <TextInput value={this.state.numCargoInCShipAuton} onChange={(text)=>{this.handleChange("numCargoInCShipAuton", text)}}
-                clearButtonMode={"while-editing"} keyboardType={'number-pad'}style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'phone-pad'} style={styles.inputText}></TextInput>
                            
               <Text style={styles.bodyText}>Amount of cargo put in rocket ship:</Text>
               <TextInput value={this.state.numCargoInRShipAuton} onChange={(text)=>{this.handleChange("numCargoInRShipAuton", text)}}
-                clearButtonMode={"while-editing"} keyboardType={'number-pad'}style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'phone-pad'} style={styles.inputText}></TextInput>
       
               <Text style={styles.bodyText}>Number of hatch panels attached to cargo ship:</Text>
               <TextInput value={this.state.numHPanelsInCShipAuton} onChange={(text)=>{this.handleChange("numHPanelsInCShipAuton", text)}}
-                clearButtonMode={"while-editing"} keyboardType={'number-pad'}style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'phone-pad'} style={styles.inputText}></TextInput>
          
               <Text style={styles.bodyText}>Number of hatch panels attached to rocket ship:</Text>
               <TextInput value={this.state.numHPanelsInRShipAuton} onChange={(text)=>{this.handleChange("numHPanelsInRShipAuton", text)}}
-                clearButtonMode={"while-editing"} keyboardType={'number-pad'}style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'phone-pad'} style={styles.inputText}></TextInput>
    
             {/*------------------------------------- Tele-op -----------------------------------*/}
 
@@ -233,19 +263,19 @@ export default class HomeScreen extends React.Component {
 
               <Text style={styles.bodyText}>Amount of cargo put in cargo ship:</Text>
               <TextInput value={this.state.numCargoInCShipTele} onChange={(text)=>{this.handleChange("numCargoInCShipTele", text)}}
-                clearButtonMode={"while-editing"} keyboardType={'number-pad'}style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'phone-pad'} style={styles.inputText}></TextInput>
           
               <Text style={styles.bodyText}>Amount of cargo put in rocket ship:</Text>
               <TextInput value={this.state.numCargoInRShipTele} onChange={(text)=>{this.handleChange("numCargoInRShipTele", text)}}
-                clearButtonMode={"while-editing"} keyboardType={'number-pad'}style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'phone-pad'} style={styles.inputText}></TextInput>
              
               <Text style={styles.bodyText}>Number of hatch panels attached to cargo ship:</Text>
               <TextInput value={this.state.numHPanelsInCShipTele} onChange={(text)=>{this.handleChange("numHPanelsInCShipTele", text)}}
-                clearButtonMode={"while-editing"} keyboardType={'number-pad'}style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'phone-pad'} style={styles.inputText}></TextInput>
         
               <Text style={styles.bodyText}>Number of hatch panels attached to rocket ship:</Text>
               <TextInput value={this.state.numHPanelsInRShipTele} onChange={(text)=>{this.handleChange("numHPanelsInRShipTele", text)}}
-                clearButtonMode={"while-editing"} keyboardType={'number-pad'}style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'phone-pad'} style={styles.inputText}></TextInput>
      
             {/*------------------------------------- End-game -----------------------------------*/}
 
@@ -257,11 +287,11 @@ export default class HomeScreen extends React.Component {
                              
               <Text style={styles.bodyText}>Habitat height reached:</Text>
               <TextInput value={this.state.habitatHeight} onChange={(text)=>{this.handleChange("habitatHeight", text)}}
-                clearButtonMode={"while-editing"} keyboardType={'number-pad'} placeholder={"0 to 3"} style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'phone-pad'} placeholder={"0 to 3"} style={styles.inputText}></TextInput>
       
               <Text style={styles.bodyText}>Extra comments:</Text>
               <TextInput value={this.state.extraComments} onChange={(text)=>{this.handleChange("extraComments", text)}}
-                clearButtonMode={"while-editing"} numberOfLines={10} placeholder={"Any extra details about the robot"} style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} placeholder={"Any extra details about the robot"} style={styles.inputText}></TextInput>
 
 
 
@@ -278,6 +308,7 @@ export default class HomeScreen extends React.Component {
         <Modal
           animationType="slide"
           transparent={true}
+          onRequestClose={()=>{console.log('closed')}}
           visible={this.state.modalVisible}>
           <View style={{marginLeft: 80, marginTop: 200, borderRadius: 30, width: 250, height: 290, backgroundColor: 'tomato'}}>
             <View style={{alignItems: 'center', marginTop: 10, marginBottom: 15}}>

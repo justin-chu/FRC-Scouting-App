@@ -38,17 +38,22 @@ export default class LocalInfo extends React.Component {
   };
   
   componentDidMount() {
-    this.props.navigation.setParams({
-      setModalVisible: this.setModalVisible.bind(this)
-    });
-    const newTeams = [];
-    AsyncStorage.getAllKeys((err, keys) => {
-      for(var i in keys) {
-        AsyncStorage.getItem(keys[i]).then(item => {
-          newTeams.push(JSON.parse(item));
-        })
-      }
-      this.setState({ teams: newTeams, filteredTeams: newTeams, loaded: true });
+    const { navigation } = this.props;
+    this.focusListener = navigation.addListener("didFocus", () => {
+      navigation.setParams({
+        setModalVisible: this.setModalVisible.bind(this)
+      });
+      var newTeams = [];
+      AsyncStorage.getAllKeys((err, keys) => {
+        console.log(keys.length)
+        for(var i in keys) {
+          AsyncStorage.getItem(keys[i]).then(item => {
+            newTeams.push(JSON.parse(item));
+            console.log(JSON.parse(item))
+          })
+        }
+        this.setState({ teams: newTeams, filteredTeams: newTeams, loaded: true });
+      });    
     });
   }
 
@@ -57,24 +62,18 @@ export default class LocalInfo extends React.Component {
   }
 
   loadListItem = ( rank, teamNum, score ) => {
+    console.log(rank +", "+teamNum+", "+score)
     return (
-      <TouchableOpacity onPress={() => this.props.navigation.navigate('TeamInfo', {info: this.state.teams[rank-1]})}>
+      <TouchableOpacity onPress={() => this.props.navigation.navigate('TeamInfo', {info: this.state.teams[rank-1], delete: true})}>
         <ListItem props={this.props} rank={rank} teamNum={teamNum} score={score} />
       </TouchableOpacity>
     )
   }
 
   _onRefresh = () => {
-    this.setState({refreshing: true});
-    const newTeams = [];
-    AsyncStorage.getAllKeys((err, keys) => {
-      for(var i in keys) {
-        AsyncStorage.getItem(keys[i]).then(item => {
-          newTeams.push(JSON.parse(item));
-        })
-      }
-      this.setState({ teams: newTeams, filteredTeams: newTeams, refreshing: false });
-    });
+    this.setState({refreshing: true})
+    this.componentDidMount()
+    this.setState({ refreshing: false })
   }
 
   searchFilter = ( text ) => {
@@ -109,8 +108,8 @@ export default class LocalInfo extends React.Component {
             onCancel={()=>this.searchFilter("cancel")}
             onDelete={()=>this.searchFilter("cancel")}
             placeholder="Search team numbers"
-            searchIconCollapsedMargin={(Dimensions.get('window').width / 2) - (130)}
-            placeholderCollapsedMargin={(Dimensions.get('window').width / 2) - (140)}
+            searchIconCollapsedMargin={(Dimensions.get('window').width / 4)*1 - 20}
+            placeholderCollapsedMargin={(Dimensions.get('window').width / 4)*1 - 30}
             keyboardType="number-pad"
             ref="search_box"
           />
@@ -144,6 +143,7 @@ export default class LocalInfo extends React.Component {
         <Modal
           animationType="slide"
           transparent={true}
+          onRequestClose={()=>this.setModalVisible(false)}
           visible={this.state.modalVisible}>
           <View style={{marginLeft: 80, marginTop: 200, borderRadius: 30, width: 250, height: 285, backgroundColor: 'tomato'}}>
             <View style={{alignItems: 'center', marginTop: 10, marginBottom: 15}}>
@@ -153,8 +153,8 @@ export default class LocalInfo extends React.Component {
               <View style={{alignItems: 'left', marginTop: 5, marginLeft: 20, marginRight: 20}}>
                 <Text style={styles.modalText}>The teams listed here are the ones you submitted and are only available to you.</Text> 
                 <Text style={styles.modalText}>If you did not have internet when submitting the entry, 
-                wait until you have internet to resubmit it, or let someone else with
-                internet copy the information and submit it to the database.</Text>
+                  wait until you have internet to resubmit it, or let someone else with
+                  internet copy the information and submit it to the database.</Text>
               </View>
               <TouchableOpacity
                 onPress={() => {

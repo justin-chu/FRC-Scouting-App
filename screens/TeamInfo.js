@@ -1,18 +1,58 @@
 import React from 'react';
-import { ScrollView, Text, View, StyleSheet } from 'react-native';
+import { Alert, Platform, TouchableOpacity, AsyncStorage, ScrollView, Text, View, StyleSheet } from 'react-native';
+import { Icon } from 'expo';
+
+deleteItem = ( key, navigation ) =>{
+  Alert.alert("Are you sure you want to delete this team?", "It will be unretrievable unless it is already on the database",
+  [
+    {
+      text: 'Cancel',
+      style: 'cancel',
+      onPress: () => {}
+    },
+    {
+      text: 'OK', 
+      onPress: () => {
+        AsyncStorage.removeItem(key);
+        navigation.navigate('LocalInfo');
+      }
+    }
+  ])
+}
 
 export default class TeamInfo extends React.Component {
   static navigationOptions = ({navigation}) => {
-    return {
-      title: 'Team ' + navigation.getParam('info', 'Team').teamNum,
-      headerStyle: {
-        backgroundColor: 'tomato'
-      },
-      headerTintColor: '#fff',
-      headerTitleStyle: {
-        fontWeight: 'bold',
-        fontSize: 22
-      },
+    if(navigation.getParam('delete', false)) {
+      return {
+        title: 'Team ' + navigation.getParam('info', 'Team').teamNum,
+        headerStyle: {
+          backgroundColor: 'tomato'
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 22
+        },
+        headerRight: (
+          <TouchableOpacity onPress={() => deleteItem(navigation.getParam('info', 'Team').teamNum, navigation)}>
+            <Icon.Ionicons name={Platform.OS === 'ios' ? 'ios-trash' : 'md-trash'} 
+              size={26} style={{color: 'white', marginRight: 15}}/>
+          </TouchableOpacity>
+        )
+      }
+    }
+    else {
+      return {
+        title: 'Team ' + navigation.getParam('info', 'Team').teamNum,
+        headerStyle: {
+          backgroundColor: 'tomato'
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 22
+        }
+      }
     }
   };
 
@@ -61,7 +101,7 @@ export default class TeamInfo extends React.Component {
         </View>  
         <Text style={styles.bodyText}>It reached <Text style={styles.emphasisGreen}>level {info.habitatHeight}</Text> on the habitat</Text>
         <Text style={styles.bodyText}>
-          {!info.extraComments=='' ? <Text style={styles.bodyText}>Extra comments: <Text style={styles.emphasisGreen}>{info.extraComments}</Text></Text> : <Text style={styles.emphasisRed}>There were no extra comments</Text>}
+          {!info.extraComments.trim()=='' ? <Text style={styles.bodyText}>Extra comments: <Text style={styles.emphasisGreen}>{info.extraComments}</Text></Text> : <Text style={styles.emphasisRed}>There were no extra comments</Text>}
         </Text>      
 
         <View style = {styles.divider} />

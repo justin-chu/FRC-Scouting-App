@@ -109,8 +109,8 @@ export default class RankingsScreen extends React.Component {
         onCancel={()=>this.searchFilter("cancel")}
         onDelete={()=>this.searchFilter("cancel")}
         placeholder="Search team numbers"
-        searchIconCollapsedMargin={(Dimensions.get('window').width / 2) - (130)}
-        placeholderCollapsedMargin={(Dimensions.get('window').width / 2) - (140)}
+        searchIconCollapsedMargin={(Dimensions.get('window').width / 4)*1 - 20}
+        placeholderCollapsedMargin={(Dimensions.get('window').width / 4)*1 - 30}
         keyboardType="number-pad"
         ref="search_box"
       />
@@ -142,6 +142,7 @@ export default class RankingsScreen extends React.Component {
         <Modal
           animationType="slide"
           transparent={true}
+          onRequestClose={()=>{Alert.alert('asd')}}
           visible={this.state.modalVisible}>
           <View style={{marginLeft: 80, marginTop: 200, borderRadius: 30, width: 250, height: 270, backgroundColor: 'tomato'}}>
             <View style={{alignItems: 'center', marginTop: 10, marginBottom: 15}}>
