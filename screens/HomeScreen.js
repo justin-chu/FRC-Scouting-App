@@ -4,9 +4,12 @@ import { Icon } from 'expo';
 import { db } from '../config';
   
 _storeData = async (info) => {
-  const totalPoints = `${findPoints(`${info.numCargoInCShipAuton}+${info.numCargoInRShipAuton}+
-    ${info.numHPanelsInCShipAuton}+${info.numHPanelsInRShipAuton}+${info.numCargoInCShipTele}+
-    ${info.numCargoInRShipTele}+${info.numHPanelsInCShipTele}+${info.numHPanelsInRShipTele}+${info.habitatHeight}`)}`
+  var habLinePoints = (info.crossedBaseline === 'yes' ? "3" : "0")
+  var habitatPoints = (info.habitatHeight < 3 ? `${info.habitat}*3` : "12")
+  const totalPoints = `${eval(`${info.numCargoInCShipAuton}*3+${info.numCargoInRShipAuton}*3+
+  ${info.numHPanelsInCShipAuton}*2+${info.numHPanelsInRShipAuton}*2+${info.numCargoInCShipTele}*3+
+  ${info.numCargoInRShipTele}*3+${info.numHPanelsInCShipTele}*2+${info.numHPanelsInRShipTele}*2+
+  ${habitatPoints}+${habLinePoints}*${info.startLevel}`)}`
   info.totalPoints = totalPoints;
   try {
     await AsyncStorage.setItem(`${info.teamNum}`, JSON.stringify(info));
@@ -15,9 +18,13 @@ _storeData = async (info) => {
 };
 
 addItem = (info) => {  
+      var habLinePoints = (info.crossedBaseline === 'yes' ? "3" : "0")
+      var habitatPoints = (info.habitatHeight < 3 ? `${info.habitat}*3` : "12")
+      console.log(info)
       db.ref(`teams/${info.teamNum}`).set({
       "info":{
       teamNum: `${info.teamNum}`,
+      startLevel: `${info.startLevel}`,
       gotOffHabitat: `${info.gotOffHabitat}`,
       crossedBaseline: `${info.crossedBaseline}`,
       usedVision: `${info.usedVision}`,
@@ -31,20 +38,13 @@ addItem = (info) => {
       numHPanelsInRShipTele: `${info.numHPanelsInRShipTele}`,
       habitatHeight: `${info.habitatHeight}`,
       extraComments: `${info.extraComments}`,
-      totalPoints: `${findPoints(`${info.numCargoInCShipAuton}+${info.numCargoInRShipAuton}+
-      ${info.numHPanelsInCShipAuton}+${info.numHPanelsInRShipAuton}+${info.numCargoInCShipTele}+
-      ${info.numCargoInRShipTele}+${info.numHPanelsInCShipTele}+${info.numHPanelsInRShipTele}+${info.habitatHeight}`)}`
+      totalPoints: `${eval(`${info.numCargoInCShipAuton}*3+${info.numCargoInRShipAuton}*3+
+      ${info.numHPanelsInCShipAuton}*2+${info.numHPanelsInRShipAuton}*2+${info.numCargoInCShipTele}*3+
+      ${info.numCargoInRShipTele}*3+${info.numHPanelsInCShipTele}*2+${info.numHPanelsInRShipTele}*2+
+      ${habitatPoints}+${habLinePoints}*${info.startLevel}`)}`
       }
   });
 };
-
-findPoints = (s) => {
-  var total= 0, s= s.match(/[+\-]*(\.\d+|\d+(\.\d+)?)/g) || [];
-  while(s.length){
-      total+= parseFloat(s.shift());
-  }
-  return total;
-}
 
 showScoutingInfo = () => {
   Alert.alert("Scouting Other Teams:", "As you watch their matches, record ALL their scores in the input fields. \n\n(optional) If you have extra comments (like if the team was penalized, state them at the bottom. \n\nOnce you are finished recording everything, tap the submit button.")
@@ -80,6 +80,7 @@ export default class HomeScreen extends React.Component {
 
   state = {
     teamNum: '',
+    startLevel: '',
     numCargoInCShipAuton:'',
     numCargoInRShipAuton:'',
     numHPanelsInCShipAuton:'',
@@ -133,13 +134,17 @@ export default class HomeScreen extends React.Component {
   }
 
   handleSubmit = () => {
-    if(Object.values(this.state).splice(0,12).includes(''))
+    if(Object.values(this.state).splice(0,13).includes(''))
       Alert.alert('Please fill out all fields (including buttons)');
     else {
       if(this.state.teamNum.trim()==="0")
         Alert.alert('The team number cannot be 0');
-      else if(!Object.values(this.state).splice(0,10).every((i)=>{return Number.isInteger(+i)}))
+      else if(!Object.values(this.state).splice(0,11).every((i)=>{return Number.isInteger(+i)}))
         Alert.alert('Please use only numbers for the scores', 'No letters, symbols or spaces');
+      else if(this.state.startLevel.trim()!=="1"&&this.state.startLevel.trim()!=="2")
+        Alert.alert('The robot can only start on habitat levels 1 or 2');
+      else if(this.state.habitatHeight.trim()!=="0"&&this.state.habitatHeight.trim()!=="1"&&this.state.habitatHeight.trim()!=="2"&&this.state.habitatHeight.trim()!=="3")
+        Alert.alert('The robot can only finish on habitat levels 0, 1, 2 or 3');
       else {
         _storeData(this.state)
         addItem(this.state)
@@ -152,6 +157,7 @@ export default class HomeScreen extends React.Component {
   clearInputs = () => {
     this.setState({
       teamNum: '',
+      startLevel: '',
       gotOffHabitat: '',
       crossedBaseline: '',
       usedVision: '',
@@ -193,6 +199,10 @@ export default class HomeScreen extends React.Component {
                 <Text style={styles.subtitleText}>Autonomous</Text>
               </View>   
               
+              <Text style={styles.bodyText}>Robot started on which level of the habitat:</Text>
+              <TextInput value={this.state.startLevel} onChange={(text)=>{this.handleChange("startLevel", text)}}
+                clearButtonMode={"while-editing"} keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'phone-pad'} placeholder={"1 to 2"} style={styles.inputText}></TextInput>
+      
               <View style={styles.buttonContainer}>   
                 <Text style={styles.bodyText}>Could get off habitat:</Text>
                 <TouchableOpacity onPress={()=>{this.handleBoolean("gotOffHabitat", 'yes')}} 
@@ -206,7 +216,7 @@ export default class HomeScreen extends React.Component {
               </View>
 
               <View style={styles.buttonContainer}>   
-                <Text style={styles.bodyText}>Crossed the baseline:</Text>
+                <Text style={styles.bodyText}>Crossed the habitat line:</Text>
                 <TouchableOpacity onPress={()=>{this.handleBoolean("crossedBaseline", 'yes')}} 
                   style={(this.state.crossedBaseline==="yes") ? styles.selectedGreenButton : styles.greenButton}>
                   <Text style={styles.buttonText}>Yes</Text>
@@ -283,7 +293,7 @@ export default class HomeScreen extends React.Component {
       
               <Text style={styles.bodyText}>Extra comments:</Text>
               <TextInput value={this.state.extraComments} onChange={(text)=>{this.handleChange("extraComments", text)}}
-                clearButtonMode={"while-editing"} placeholder={"Any extra details about the robot"} style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} placeholder={"eg. It helped others onto the habitat/it was penalized"} style={styles.inputText}></TextInput>
 
 
 

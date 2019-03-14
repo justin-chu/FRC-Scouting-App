@@ -3,7 +3,7 @@ import { Alert, Platform, TouchableOpacity, AsyncStorage, ScrollView, Text, View
 import { Icon } from 'expo';
 
 deleteItem = ( key, navigation ) =>{
-  Alert.alert("Are you sure you want to delete this team?", "It will be unretrievable unless it is already on the database",
+  Alert.alert("Are you sure you want to delete this team?", "It will be unretrievable unless it is already in the database",
   [
     {
       text: 'Cancel',
@@ -70,6 +70,9 @@ export default class TeamInfo extends React.Component {
         <View style={styles.subtitleContainer}>   
           <Text style={styles.subtitleText}>Autonomous</Text>
         </View>      
+        <Text style={styles.bodyText}>The robot started on level
+          <Text style={styles.emphasisGreen}> {info.startLevel} </Text>
+          of the habitat</Text>
         <Text style={styles.bodyText}>The robot 
           {(info.gotOffHabitat==='yes') ? <Text style={styles.emphasisGreen}> did </Text> : <Text style={styles.emphasisRed}> did not </Text>}
           get off the habitat</Text>
