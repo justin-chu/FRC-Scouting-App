@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "FRC7520 Scouting App",
+    "name": "7520 Scouting",
     "slug": "FRCAPP",
     "privacy": "public",
     "sdkVersion": "32.0.0",
@@ -12,7 +12,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -22,8 +22,12 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "android": {
+      "package": "www.minekee.com"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "www.minekee.com"
     }
   }
 }

@@ -1,18 +1,5 @@
 import React from 'react';
-import {
-  StatusBar,
-  KeyboardAvoidingView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Alert,
-  Platform,
-  ScrollView,
-  AsyncStorage,
-  Modal
-} from 'react-native';
+import { StatusBar, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, Platform, ScrollView, AsyncStorage, Modal } from 'react-native';
 import { Icon } from 'expo';
 import { db } from '../config';
   
@@ -27,7 +14,7 @@ _storeData = async (info) => {
   }
 };
 
-let addItem = (info) => {  
+addItem = (info) => {  
       db.ref(`teams/${info.teamNum}`).set({
       "info":{
       teamNum: `${info.teamNum}`,
@@ -50,12 +37,17 @@ let addItem = (info) => {
       }
   });
 };
+
 findPoints = (s) => {
   var total= 0, s= s.match(/[+\-]*(\.\d+|\d+(\.\d+)?)/g) || [];
   while(s.length){
       total+= parseFloat(s.shift());
   }
   return total;
+}
+
+showScoutingInfo = () => {
+  Alert.alert("Scouting Other Teams:", "As you watch their matches, record ALL their scores in the input fields. \n\n(optional) If you have extra comments (like if the team was penalized, state them at the bottom. \n\nOnce you are finished recording everything, tap the submit button.")
 }
 
 export default class HomeScreen extends React.Component {
@@ -72,7 +64,7 @@ export default class HomeScreen extends React.Component {
         fontSize: 22
       },
       headerLeft: (
-        <TouchableOpacity onPress={() => {params.setModalVisible(true)}}>
+        <TouchableOpacity onPress={()=>Platform.OS === 'ios' ? params.setModalVisible(true) : showScoutingInfo()}>
           <Icon.Ionicons name={Platform.OS === 'ios' ? 'ios-information-circle' : 'md-information-circle'} 
             size={26} style={{color: 'white', marginLeft: 15}}/>
         </TouchableOpacity>
@@ -308,14 +300,14 @@ export default class HomeScreen extends React.Component {
         <Modal
           animationType="slide"
           transparent={true}
-          onRequestClose={()=>{console.log('closed')}}
+          onRequestClose={()=>{}}
           visible={this.state.modalVisible}>
           <View style={{marginLeft: 80, marginTop: 200, borderRadius: 30, width: 250, height: 290, backgroundColor: 'tomato'}}>
-            <View style={{alignItems: 'center', marginTop: 10, marginBottom: 15}}>
-              <View style={{borderBottomWidth: 2, borderColor: 'white'}}>
+            <View style={{marginTop: 10, marginBottom: 15}}>
+              <View style={{alignItems: 'center', borderBottomWidth: 2, borderColor: 'white'}}>
                 <Text style={styles.modalHeader}>Scouting other teams:</Text>
               </View>
-              <View style={{alignItems: 'left', marginTop: 5, marginLeft: 20, marginRight: 20}}>
+              <View style={{textAlign: 'left', marginTop: 5, marginLeft: 20, marginRight: 20}}>
                 <Text style={styles.modalText}>As you watch their matches, 
                 record <Text style={{fontWeight: 'bold'}}>all</Text> their scores in the input fields.</Text>
                 <Text style={styles.modalText}><Text style={{fontWeight: 'bold'}}>OPTIONAL: </Text> 
@@ -356,6 +348,7 @@ const styles = StyleSheet.create({
   modalButton: {
     fontSize: 20,
     color: 'white',
+    textAlign: 'center'
   },
   buttonContainer: {
     flexDirection: 'row',

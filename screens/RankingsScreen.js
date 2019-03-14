@@ -1,11 +1,15 @@
 import React from 'react';
-import { Modal, Dimensions, FlatList, ActivityIndicator, Platform, RefreshControl, Text, View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Alert, Modal, Dimensions, FlatList, ActivityIndicator, Platform, RefreshControl, Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Icon } from 'expo';
 import ListItem from '../components/ListItem';
 import Search from 'react-native-search-box';
 import { db } from '../config';
 
 let itemsRef = db.ref('/teams');
+
+showAllInfo = () => {
+  Alert.alert("All Teams:", "The teams listed here are already entered into our database. \n\nIf the screen is not loading, you probably do not have internet. \n\nHowever, if you do have internet and the screen is not loading, restart the app.")
+}
 
 export default class RankingsScreen extends React.Component {
   static navigationOptions = ({navigation}) => {
@@ -24,7 +28,7 @@ export default class RankingsScreen extends React.Component {
         fontSize: 22
       },
       headerLeft: (
-        <TouchableOpacity onPress={() => {params.setModalVisible(true)}}>
+        <TouchableOpacity onPress={()=>Platform.OS === 'ios' ? params.setModalVisible(true) : showAllInfo()}>
           <Icon.Ionicons name={Platform.OS === 'ios' ? 'ios-information-circle' : 'md-information-circle'} 
             size={26} style={{color: 'white', marginLeft: 15}}/>
         </TouchableOpacity>
@@ -102,27 +106,29 @@ export default class RankingsScreen extends React.Component {
     }
     return (
       <View style={styles.container}>
-      <View style={{width: '100%', borderColor: 'tomato', marginTop: -20, marginBottom: 15}}>
-      <Search
-        backgroundColor="tomato"
-        onChangeText={(text)=>this.searchFilter(text)}
-        onCancel={()=>this.searchFilter("cancel")}
-        onDelete={()=>this.searchFilter("cancel")}
-        placeholder="Search team numbers"
-        searchIconCollapsedMargin={(Dimensions.get('window').width / 4)*1 - 20}
-        placeholderCollapsedMargin={(Dimensions.get('window').width / 4)*1 - 30}
-        keyboardType="number-pad"
-        ref="search_box"
-      />
-      </View>
-      <View style={styles.labelContainer}>
-        <View style={{alignItems:'center', flex: 1}}>
-          <Text style={styles.labelText}>Team #</Text>
+
+        <View style={{width: '100%', borderColor: 'tomato', marginTop: -20, marginBottom: 15}}>
+          <Search
+            backgroundColor="tomato"
+            onChangeText={(text)=>this.searchFilter(text)}
+            onCancel={()=>this.searchFilter("cancel")}
+            onDelete={()=>this.searchFilter("cancel")}
+            placeholder="Search team numbers"
+            searchIconCollapsedMargin={(Dimensions.get('window').width / 4)*1 - 20}
+            placeholderCollapsedMargin={(Dimensions.get('window').width / 4)*1 - 30}
+            keyboardType="number-pad"
+            ref="search_box"
+          />
         </View>
-        <View style={{alignItems:'center', flex: 1}}>
-          <Text style={styles.labelText}>Score</Text>
+
+        <View style={styles.labelContainer}>
+          <View style={{alignItems:'center', flex: 1}}>
+            <Text style={styles.labelText}>Team #</Text>
+          </View>
+          <View style={{alignItems:'center', flex: 1}}>
+            <Text style={styles.labelText}>Score</Text>
+          </View>
         </View>
-      </View>
 
         <FlatList 
           refreshControl={
@@ -142,14 +148,14 @@ export default class RankingsScreen extends React.Component {
         <Modal
           animationType="slide"
           transparent={true}
-          onRequestClose={()=>{Alert.alert('asd')}}
+          onRequestClose={()=>{}}
           visible={this.state.modalVisible}>
           <View style={{marginLeft: 80, marginTop: 200, borderRadius: 30, width: 250, height: 270, backgroundColor: 'tomato'}}>
-            <View style={{alignItems: 'center', marginTop: 10, marginBottom: 15}}>
-              <View style={{borderBottomWidth: 2, borderColor: 'white'}}>
+            <View style={{textAlign: 'center', marginTop: 10, marginBottom: 15}}>
+              <View style={{alignItems: 'center', borderBottomWidth: 2, borderColor: 'white'}}>
                 <Text style={styles.modalHeader}>All teams:</Text>
               </View>
-              <View style={{alignItems: 'left', marginTop: 5, marginLeft: 20, marginRight: 20}}>
+              <View style={{textAlign: 'left', marginTop: 5, marginLeft: 20, marginRight: 20}}>
                 <Text style={styles.modalText}>The teams listed here are already entered into our database.</Text>
                 <Text style={styles.modalText}>If the screen is not loading, you probably do not have internet.</Text>
                 <Text style={styles.modalText}>However, if you do have internet and the screen is not loading, restart the app.</Text>
@@ -190,6 +196,7 @@ export default class RankingsScreen extends React.Component {
     modalButton: {
       fontSize: 20,
       color: 'white',
+      textAlign: 'center'
     },
     itemContainer: {
       flexDirection: 'row',
@@ -198,8 +205,8 @@ export default class RankingsScreen extends React.Component {
     },
     labelContainer: {
       flexDirection: 'row',
-      marginTop: -10, 
-      height: 20,
+      marginTop: Platform.OS === 'ios' ? -11 : -17, 
+      height: Platform.OS === 'ios' ? 20 : 23,
       borderBottomColor: 'grey',
       borderBottomWidth: 1,
     },

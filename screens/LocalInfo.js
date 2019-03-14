@@ -1,8 +1,12 @@
 import React from 'react';
-import { Modal, Dimensions, FlatList, AsyncStorage, ActivityIndicator, Platform, RefreshControl, Text, View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Alert, Modal, Dimensions, FlatList, AsyncStorage, ActivityIndicator, Platform, RefreshControl, Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Icon } from 'expo';
 import ListItem from '../components/ListItem';
 import Search from 'react-native-search-box';
+
+showLocalInfo = () => {
+  Alert.alert("Your Teams:", "The teams listed here are the ones you submitted and are only available to you. \n\nIf you did not have internet when submitting the entry, wait until you have internet to resubmit it, or let someone else with internet copy the information and submit it to the database.")
+}
 
 export default class LocalInfo extends React.Component {
   static navigationOptions = ({navigation}) => {
@@ -21,7 +25,7 @@ export default class LocalInfo extends React.Component {
         fontSize: 22
       },
       headerLeft: (
-        <TouchableOpacity onPress={() => {params.setModalVisible(true)}}>
+        <TouchableOpacity onPress={()=>Platform.OS === 'ios' ? params.setModalVisible(true) : showLocalInfo()}>
           <Icon.Ionicons name={Platform.OS === 'ios' ? 'ios-information-circle' : 'md-information-circle'} 
             size={26} style={{color: 'white', marginLeft: 15}}/>
         </TouchableOpacity>
@@ -45,11 +49,9 @@ export default class LocalInfo extends React.Component {
       });
       var newTeams = [];
       AsyncStorage.getAllKeys((err, keys) => {
-        console.log(keys.length)
         for(var i in keys) {
           AsyncStorage.getItem(keys[i]).then(item => {
             newTeams.push(JSON.parse(item));
-            console.log(JSON.parse(item))
           })
         }
         this.setState({ teams: newTeams, filteredTeams: newTeams, loaded: true });
@@ -62,7 +64,6 @@ export default class LocalInfo extends React.Component {
   }
 
   loadListItem = ( rank, teamNum, score ) => {
-    console.log(rank +", "+teamNum+", "+score)
     return (
       <TouchableOpacity onPress={() => this.props.navigation.navigate('TeamInfo', {info: this.state.teams[rank-1], delete: true})}>
         <ListItem props={this.props} rank={rank} teamNum={teamNum} score={score} />
@@ -101,6 +102,7 @@ export default class LocalInfo extends React.Component {
     }
     return (
       <View style={styles.container}>
+      
         <View style={{width: '100%', borderColor: 'tomato', marginTop: -20, marginBottom: 15}}>
           <Search
             backgroundColor="tomato"
@@ -138,19 +140,19 @@ export default class LocalInfo extends React.Component {
           this.loadListItem(index+1, this.state.filteredTeams[index].teamNum, this.state.filteredTeams[index].totalPoints) }/>
         
         {(this.state.refreshing)?<Text style={{color: 'grey'}}>Refreshing...</Text>
-        :<Text style={{color: 'grey'}}>Swipe down to refresh</Text>}
+        :<Text style={{color: 'grey'}}>If an item is not showing, swipe down to refresh</Text>}
 
         <Modal
           animationType="slide"
           transparent={true}
-          onRequestClose={()=>this.setModalVisible(false)}
+          onRequestClose={()=>{}}
           visible={this.state.modalVisible}>
           <View style={{marginLeft: 80, marginTop: 200, borderRadius: 30, width: 250, height: 285, backgroundColor: 'tomato'}}>
-            <View style={{alignItems: 'center', marginTop: 10, marginBottom: 15}}>
-              <View style={{borderBottomWidth: 2, borderColor: 'white'}}>
+            <View style={{textAlign: 'center', marginTop: 10, marginBottom: 15}}>
+              <View style={{alignItems: 'center', borderBottomWidth: 2, borderColor: 'white'}}>
                 <Text style={styles.modalHeader}>Your teams:</Text>
               </View>
-              <View style={{alignItems: 'left', marginTop: 5, marginLeft: 20, marginRight: 20}}>
+              <View style={{textAlign: 'left', marginTop: 5, marginLeft: 20, marginRight: 20}}>
                 <Text style={styles.modalText}>The teams listed here are the ones you submitted and are only available to you.</Text> 
                 <Text style={styles.modalText}>If you did not have internet when submitting the entry, 
                   wait until you have internet to resubmit it, or let someone else with
@@ -192,6 +194,7 @@ export default class LocalInfo extends React.Component {
     modalButton: {
       fontSize: 20,
       color: 'white',
+      textAlign: 'center'
     },
     itemContainer: {
       flexDirection: 'row',
@@ -200,8 +203,8 @@ export default class LocalInfo extends React.Component {
     },
     labelContainer: {
       flexDirection: 'row',
-      marginTop: -10, 
-      height: 20,
+      marginTop: Platform.OS === 'ios' ? -11 : -17, 
+      height: Platform.OS === 'ios' ? 20 : 23,
       borderBottomColor: 'grey',
       borderBottomWidth: 1,
     },
