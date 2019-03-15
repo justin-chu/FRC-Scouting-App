@@ -6,10 +6,10 @@ import { db } from '../config';
 _storeData = async (info) => {
   var habLinePoints = (info.crossedBaseline === 'yes' ? "3" : "0")
   var habitatPoints = (info.habitatHeight < 3 ? `${info.habitat}*3` : "12")
-  const totalPoints = `${eval(`${info.numCargoInCShipAuton}*3+${info.numCargoInRShipAuton}*3+
-  ${info.numHPanelsInCShipAuton}*2+${info.numHPanelsInRShipAuton}*2+${info.numCargoInCShipTele}*3+
-  ${info.numCargoInRShipTele}*3+${info.numHPanelsInCShipTele}*2+${info.numHPanelsInRShipTele}*2+
-  ${habitatPoints}+${habLinePoints}*${info.startLevel}`)}`
+  const totalPoints = `${parseInt(info.numCargoInCShipAuton)*3+parseInt(info.numCargoInRShipAuton)*3+
+  parseInt(info.numHPanelsInCShipAuton)*2+parseInt(info.numHPanelsInRShipAuton)*2+parseInt(info.numCargoInCShipTele)*3+
+  parseInt(info.numCargoInRShipTele)*3+parseInt(info.numHPanelsInCShipTele)*2+parseInt(info.numHPanelsInRShipTele)*2+
+  parseInt(habitatPoints)+parseInt(habLinePoints)*parseInt(info.startLevel)}`
   info.totalPoints = totalPoints;
   try {
     await AsyncStorage.setItem(`${info.teamNum}`, JSON.stringify(info));
@@ -20,7 +20,6 @@ _storeData = async (info) => {
 addItem = (info) => {  
       var habLinePoints = (info.crossedBaseline === 'yes' ? "3" : "0")
       var habitatPoints = (info.habitatHeight < 3 ? `${info.habitat}*3` : "12")
-      console.log(info)
       db.ref(`teams/${info.teamNum}`).set({
       "info":{
       teamNum: `${info.teamNum}`,
@@ -38,10 +37,10 @@ addItem = (info) => {
       numHPanelsInRShipTele: `${info.numHPanelsInRShipTele}`,
       habitatHeight: `${info.habitatHeight}`,
       extraComments: `${info.extraComments}`,
-      totalPoints: `${eval(`${info.numCargoInCShipAuton}*3+${info.numCargoInRShipAuton}*3+
-      ${info.numHPanelsInCShipAuton}*2+${info.numHPanelsInRShipAuton}*2+${info.numCargoInCShipTele}*3+
-      ${info.numCargoInRShipTele}*3+${info.numHPanelsInCShipTele}*2+${info.numHPanelsInRShipTele}*2+
-      ${habitatPoints}+${habLinePoints}*${info.startLevel}`)}`
+      totalPoints: `${parseInt(info.numCargoInCShipAuton)*3+parseInt(info.numCargoInRShipAuton)*3+
+        parseInt(info.numHPanelsInCShipAuton)*2+parseInt(info.numHPanelsInRShipAuton)*2+parseInt(info.numCargoInCShipTele)*3+
+        parseInt(info.numCargoInRShipTele)*3+parseInt(info.numHPanelsInCShipTele)*2+parseInt(info.numHPanelsInRShipTele)*2+
+        parseInt(habitatPoints)+parseInt(habLinePoints)*parseInt(info.startLevel)}`
       }
   });
 };
@@ -216,7 +215,7 @@ export default class HomeScreen extends React.Component {
               </View>
 
               <View style={styles.buttonContainer}>   
-                <Text style={styles.bodyText}>Crossed the habitat line:</Text>
+                <Text style={styles.bodyText}>Crossed the baseline:</Text>
                 <TouchableOpacity onPress={()=>{this.handleBoolean("crossedBaseline", 'yes')}} 
                   style={(this.state.crossedBaseline==="yes") ? styles.selectedGreenButton : styles.greenButton}>
                   <Text style={styles.buttonText}>Yes</Text>
@@ -293,7 +292,7 @@ export default class HomeScreen extends React.Component {
       
               <Text style={styles.bodyText}>Extra comments:</Text>
               <TextInput value={this.state.extraComments} onChange={(text)=>{this.handleChange("extraComments", text)}}
-                clearButtonMode={"while-editing"} placeholder={"eg. It helped others onto the habitat/it was penalized"} style={styles.inputText}></TextInput>
+                clearButtonMode={"while-editing"} placeholder={"eg. It helped teammates onto the habitat"} style={styles.inputText}></TextInput>
 
 
 
