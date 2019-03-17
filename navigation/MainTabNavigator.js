@@ -47,7 +47,8 @@ RanksStack.navigationOptions = {
 const LocalStack = createStackNavigator(
   {
     LocalInfo: LocalInfo,
-    TeamInfo: TeamInfo
+    TeamInfo: TeamInfo,
+    HomeScreen: HomeScreen
   },
   {
     initialRouteName: "LocalInfo"

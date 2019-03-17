@@ -2,14 +2,15 @@ import React from 'react';
 import { StatusBar, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, Platform, ScrollView, AsyncStorage, Modal } from 'react-native';
 import { Icon } from 'expo';
 import { db } from '../config';
-  
+
 _storeData = async (info) => {
   var habLinePoints = (info.crossedBaseline === 'yes' ? "3" : "0")
-  var habitatPoints = (info.habitatHeight < 3 ? `${info.habitat}*3` : "12")
-  const totalPoints = `${parseInt(info.numCargoInCShipAuton)*3+parseInt(info.numCargoInRShipAuton)*3+
-  parseInt(info.numHPanelsInCShipAuton)*2+parseInt(info.numHPanelsInRShipAuton)*2+parseInt(info.numCargoInCShipTele)*3+
-  parseInt(info.numCargoInRShipTele)*3+parseInt(info.numHPanelsInCShipTele)*2+parseInt(info.numHPanelsInRShipTele)*2+
-  parseInt(habitatPoints)+parseInt(habLinePoints)*parseInt(info.startLevel)}`
+  var habitatPoints = (info.habitatHeight < 3 ? `${parseInt(info.habitatHeight)*3}` : "12")
+  const totalPoints = `${(parseInt(info.numCargoInCShipAuton)+parseInt(info.numCargoInRShipAuton)+
+    parseInt(info.numCargoInCShipTele)+parseInt(info.numCargoInRShipTele))*3+
+    (parseInt(info.numHPanelsInCShipAuton)+parseInt(info.numHPanelsInRShipAuton)+
+    parseInt(info.numHPanelsInCShipTele)+parseInt(info.numHPanelsInRShipTele))*2+
+    parseInt(habitatPoints)+(parseInt(habLinePoints)*parseInt(info.startLevel))}`
   info.totalPoints = totalPoints;
   try {
     await AsyncStorage.setItem(`${info.teamNum}`, JSON.stringify(info));
@@ -18,32 +19,32 @@ _storeData = async (info) => {
 };
 
 addItem = (info) => {  
-      var habLinePoints = (info.crossedBaseline === 'yes' ? "3" : "0")
-      var habitatPoints = (info.habitatHeight < 3 ? `${info.habitat}*3` : "12")
-      db.ref(`teams/${info.teamNum}`).set({
-      "info":{
-      teamNum: `${info.teamNum}`,
-      startLevel: `${info.startLevel}`,
-      gotOffHabitat: `${info.gotOffHabitat}`,
-      crossedBaseline: `${info.crossedBaseline}`,
-      usedVision: `${info.usedVision}`,
-      numCargoInCShipAuton: `${info.numCargoInCShipAuton}`,
-      numCargoInRShipAuton: `${info.numCargoInRShipAuton}`,
-      numHPanelsInCShipAuton: `${info.numHPanelsInCShipAuton}`,
-      numHPanelsInRShipAuton: `${info.numHPanelsInRShipAuton}`,
-      numCargoInCShipTele: `${info.numCargoInCShipTele}`,
-      numCargoInRShipTele: `${info.numCargoInRShipTele}`,
-      numHPanelsInCShipTele: `${info.numHPanelsInCShipTele}`,
-      numHPanelsInRShipTele: `${info.numHPanelsInRShipTele}`,
-      habitatHeight: `${info.habitatHeight}`,
-      extraComments: `${info.extraComments}`,
-      totalPoints: `${parseInt(info.numCargoInCShipAuton)*3+parseInt(info.numCargoInRShipAuton)*3+
-        parseInt(info.numHPanelsInCShipAuton)*2+parseInt(info.numHPanelsInRShipAuton)*2+parseInt(info.numCargoInCShipTele)*3+
-        parseInt(info.numCargoInRShipTele)*3+parseInt(info.numHPanelsInCShipTele)*2+parseInt(info.numHPanelsInRShipTele)*2+
-        parseInt(habitatPoints)+parseInt(habLinePoints)*parseInt(info.startLevel)}`
-      }
+  var habLinePoints = (info.crossedBaseline === 'yes' ? "3" : "0")
+  var habitatPoints = (info.habitatHeight < 3 ? `${info.habitatHeight}*3` : "12")
+  db.ref(`teams/${info.teamNum}`).set({
+    "info":{
+    teamNum: `${info.teamNum}`,
+    startLevel: `${info.startLevel}`,
+    gotOffHabitat: `${info.gotOffHabitat}`,
+    crossedBaseline: `${info.crossedBaseline}`,
+    usedVision: `${info.usedVision}`,
+    numCargoInCShipAuton: `${info.numCargoInCShipAuton}`,
+    numCargoInRShipAuton: `${info.numCargoInRShipAuton}`,
+    numHPanelsInCShipAuton: `${info.numHPanelsInCShipAuton}`,
+    numHPanelsInRShipAuton: `${info.numHPanelsInRShipAuton}`,
+    numCargoInCShipTele: `${info.numCargoInCShipTele}`,
+    numCargoInRShipTele: `${info.numCargoInRShipTele}`,
+    numHPanelsInCShipTele: `${info.numHPanelsInCShipTele}`,
+    numHPanelsInRShipTele: `${info.numHPanelsInRShipTele}`,
+    habitatHeight: `${info.habitatHeight}`,
+    extraComments: `${info.extraComments}`,
+    totalPoints: `${parseInt(info.numCargoInCShipAuton)*3+parseInt(info.numCargoInRShipAuton)*3+
+      parseInt(info.numHPanelsInCShipAuton)*2+parseInt(info.numHPanelsInRShipAuton)*2+parseInt(info.numCargoInCShipTele)*3+
+      parseInt(info.numCargoInRShipTele)*3+parseInt(info.numHPanelsInCShipTele)*2+parseInt(info.numHPanelsInRShipTele)*2+
+      parseInt(habitatPoints)+parseInt(habLinePoints)*parseInt(info.startLevel)}`
+    }
   });
-};
+}
 
 showScoutingInfo = () => {
   Alert.alert("Scouting Other Teams:", "As you watch their matches, record ALL their scores in the input fields. \n\n(optional) If you have extra comments (like if the team was penalized, state them at the bottom. \n\nOnce you are finished recording everything, tap the submit button.")
@@ -97,7 +98,31 @@ export default class HomeScreen extends React.Component {
   };
 
   componentDidMount() {
-    this.props.navigation.setParams({
+    const { navigation } = this.props;
+    this.focusListener = navigation.addListener("didFocus", () => {
+      navigation.setParams({
+        setModalVisible: this.setModalVisible.bind(this)
+      });
+      const info = navigation.getParam('info', null)
+      if(info) {
+        this.setState({teamNum: info.teamNum})
+        this.setState({startLevel: info.startLevel})
+        this.setState({numCargoInCShipAuton: info.numCargoInCShipAuton})
+        this.setState({numCargoInRShipAuton: info.numCargoInRShipAuton})
+        this.setState({numHPanelsInCShipAuton: info.numHPanelsInCShipAuton})
+        this.setState({numHPanelsInRShipAuton: info.numHPanelsInRShipAuton})
+        this.setState({numCargoInCShipTele: info.numCargoInCShipTele})
+        this.setState({numCargoInRShipTele: info.numCargoInRShipTele})
+        this.setState({numHPanelsInCShipTele: info.numHPanelsInCShipTele})
+        this.setState({numHPanelsInRShipTele: info.numHPanelsInRShipTele})
+        this.setState({habitatHeight: info.habitatHeight})
+        this.setState({gotOffHabitat: info.gotOffHabitat})
+        this.setState({crossedBaseline: info.crossedBaseline})
+        this.setState({usedVision: info.usedVision})
+        this.setState({extraComments: info.extraComments})
+      }
+    });
+    navigation.setParams({
       setModalVisible: this.setModalVisible.bind(this),
       clearButton: this.clearButton.bind(this)
     });
@@ -148,7 +173,13 @@ export default class HomeScreen extends React.Component {
         _storeData(this.state)
         addItem(this.state)
         this.clearInputs()
-        Alert.alert('Item saved successfully');
+        Alert.alert('Item saved successfully','',
+        [
+          {
+            text: 'OK', 
+            onPress: () => {(this.props.navigation.dangerouslyGetParent().state.routeName==='LocalStack') ? this.props.navigation.navigate('LocalInfo') : {}}
+          }
+        ]);
       }
     }
   }
@@ -191,7 +222,7 @@ export default class HomeScreen extends React.Component {
               <TextInput value={this.state.teamNum} onChange={(text)=>{this.handleChange("teamNum", text)}} 
                 clearButtonMode={"while-editing"} keyboardType={Platform.OS === 'ios' ? 'number-pad' : 'phone-pad'} 
                 placeholder={"eg. 7520"} style={styles.inputText}></TextInput>
- 
+
             {/*------------------------------------- Autonomous ------------------------------------*/}
               <View style = {styles.divider} />
               <View style={styles.subtitleContainer}>   

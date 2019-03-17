@@ -1,9 +1,11 @@
 import React from 'react';
 import { Alert, Platform, TouchableOpacity, AsyncStorage, ScrollView, Text, View, StyleSheet } from 'react-native';
 import { Icon } from 'expo';
+import { db } from '../config';
+import { NavigationActions } from 'react-navigation';
 
 deleteItem = ( key, navigation ) =>{
-  Alert.alert("Are you sure you want to delete this team?", "It will be unretrievable unless it is already in the database",
+  Alert.alert("Are you sure you want to delete this team?", "It will be unretrievable unless it is already in the database.",
   [
     {
       text: 'Cancel',
@@ -15,6 +17,48 @@ deleteItem = ( key, navigation ) =>{
       onPress: () => {
         AsyncStorage.removeItem(key);
         navigation.navigate('LocalInfo');
+      }
+    }
+  ])
+}
+
+addTeam = (info) => {  
+  Alert.alert("Upload this team to database?", "This will only work if you have internet.",
+  [
+    {
+      text: 'Cancel',
+      style: 'cancel',
+      onPress: () => {}
+    },
+    {
+      text: 'OK', 
+      onPress: () => {
+        var habLinePoints = (info.crossedBaseline === 'yes' ? "3" : "0")
+        var habitatPoints = (info.habitatHeight < 3 ? `${info.habitatHeight}*3` : "12")
+        db.ref(`teams/${info.teamNum}`).set({
+          "info":{
+          teamNum: `${info.teamNum}`,
+          startLevel: `${info.startLevel}`,
+          gotOffHabitat: `${info.gotOffHabitat}`,
+          crossedBaseline: `${info.crossedBaseline}`,
+          usedVision: `${info.usedVision}`,
+          numCargoInCShipAuton: `${info.numCargoInCShipAuton}`,
+          numCargoInRShipAuton: `${info.numCargoInRShipAuton}`,
+          numHPanelsInCShipAuton: `${info.numHPanelsInCShipAuton}`,
+          numHPanelsInRShipAuton: `${info.numHPanelsInRShipAuton}`,
+          numCargoInCShipTele: `${info.numCargoInCShipTele}`,
+          numCargoInRShipTele: `${info.numCargoInRShipTele}`,
+          numHPanelsInCShipTele: `${info.numHPanelsInCShipTele}`,
+          numHPanelsInRShipTele: `${info.numHPanelsInRShipTele}`,
+          habitatHeight: `${info.habitatHeight}`,
+          extraComments: `${info.extraComments}`,
+          totalPoints: `${parseInt(info.numCargoInCShipAuton)*3+parseInt(info.numCargoInRShipAuton)*3+
+            parseInt(info.numHPanelsInCShipAuton)*2+parseInt(info.numHPanelsInRShipAuton)*2+parseInt(info.numCargoInCShipTele)*3+
+            parseInt(info.numCargoInRShipTele)*3+parseInt(info.numHPanelsInCShipTele)*2+parseInt(info.numHPanelsInRShipTele)*2+
+            parseInt(habitatPoints)+parseInt(habLinePoints)*parseInt(info.startLevel)}`
+          }
+        })
+        .then(()=>{Alert.alert('Succesfully uploaded to database.')})
       }
     }
   ])
@@ -34,16 +78,26 @@ export default class TeamInfo extends React.Component {
           fontSize: 22
         },
         headerRight: (
-          <TouchableOpacity onPress={() => deleteItem(navigation.getParam('info', 'Team').teamNum, navigation)}>
-            <Icon.Ionicons name={Platform.OS === 'ios' ? 'ios-trash' : 'md-trash'} 
-              size={26} style={{color: 'white', marginRight: 15}}/>
-          </TouchableOpacity>
+          <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity onPress={() => addTeam(navigation.getParam('info', null))}>
+              <Icon.Ionicons name={Platform.OS === 'ios' ? 'ios-cloud-upload' : 'md-cloud-upload'} 
+                size={26} style={{color: 'white', marginRight: 15}}/>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('HomeScreen', {info: navigation.getParam('info', null)})}>
+              <Icon.Ionicons name={Platform.OS === 'ios' ? 'ios-create' : 'md-create'} 
+                size={26} style={{color: 'white', marginRight: 15}}/>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => deleteItem(navigation.getParam('info', null).teamNum, navigation)}>
+              <Icon.Ionicons name={Platform.OS === 'ios' ? 'ios-trash' : 'md-trash'} 
+                size={26} style={{color: 'white', marginRight: 15}}/>
+            </TouchableOpacity>
+          </View>
         )
       }
     }
     else {
       return {
-        title: 'Team ' + navigation.getParam('info', 'Team').teamNum,
+        title: 'Team ' + navigation.getParam('info', null).teamNum,
         headerStyle: {
           backgroundColor: 'tomato'
         },
