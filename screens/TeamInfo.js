@@ -34,7 +34,7 @@ addTeam = (info) => {
       text: 'OK', 
       onPress: () => {
         var habLinePoints = (info.crossedBaseline === 'yes' ? "3" : "0")
-        var habitatPoints = (info.habitatHeight < 3 ? `${info.habitatHeight}*3` : "12")
+        var habitatPoints = (info.habitatHeight < 3 ? `${parseInt(info.habitatHeight)*3}` : "12")
         db.ref(`teams/${info.teamNum}`).set({
           "info":{
           teamNum: `${info.teamNum}`,
